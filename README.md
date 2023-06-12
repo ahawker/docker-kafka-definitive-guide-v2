@@ -67,3 +67,12 @@ By default, the following are created:
 | partition-1 | 1 | 1 |
 | partition-3 | 3| 1 |
 
+
+### Configuration
+
+In Chapter 2 of the book, it will discuss many of the configuration values available for configuring Kafka. These don't
+match our setup here _identically_ because we configure the brokers via environment variables instead of configuration files.
+
+Environment variables are all uppercase and prefixed with `KAFKA_`. That's it. For example:
+
+`KAFKA_BROKER_ID` maps to `broker.id`.
