@@ -21,20 +21,24 @@ restart-broker-%: ## Restart broker for the given stem id.
 	@$(MAKE) -C $(DEPLOY_DIR) restart-broker-$*
 
 .PHONY: start-broker-%s
-start-broker-%: ## Start v2 broker for the given stem id.
+start-broker-%: ## Start cluster broker for the given stem id.
 	@$(MAKE) -C $(DEPLOY_DIR) start-broker-$*
 
 .PHONY: stop-broker-%s
-stop-broker-%: ## Stop v2 broker for the given stem id.
+stop-broker-%: ## Stop cluster broker for the given stem id.
 	@$(MAKE) -C $(DEPLOY_DIR) stop-broker-$*
 
 .PHONY: pause-broker-%s
-pause-broker-%: ## Pause v2 broker for the given stem id.
+pause-broker-%: ## Pause cluster broker for the given stem id.
 	@$(MAKE) -C $(DEPLOY_DIR) pause-broker-$*
 
 .PHONY: resume-broker-%s
-resume-broker-%: ## Resume v2 broker for the given stem id.
+resume-broker-%: ## Resume cluster broker for the given stem id.
 	@$(MAKE) -C $(DEPLOY_DIR) resume-broker-$*
+
+.PHONY: shell-broker-%s
+shell-broker-%: ## Open shell to cluster broker for the given stem id.
+	@$(MAKE) -C $(DEPLOY_DIR) shell-broker-$*
 
 .PHONY: pause-zk
 pause-zk: ## Pause zookeeper.

@@ -67,6 +67,35 @@ By default, the following are created:
 | partition-1 | 1 | 1 |
 | partition-3 | 3| 1 |
 
+### Altering Configuration
+
+Let's say we want to alter a topic configuration outlined in the book. Let's open a shell and run some commands.
+
+```
+# Open a shell.
+❯ make shell-broker-1
+
+
+# List all topics.
+[appuser@3dd3d054cbc0 ~]$ kafka-topics --bootstrap-server kafka_1:9091 --list
+__consumer_offsets
+partition-1
+partition-3
+
+# Show configuration for topic partition-1
+[appuser@3dd3d054cbc0 ~]$ kafka-topics --bootstrap-server kafka_1:9091 --describe --topic partition-1
+Topic: partition-1	TopicId: fTavOk4dTJeq6LxffXPGEg	PartitionCount: 1	ReplicationFactor: 1	Configs: cleanup.policy=delete
+	Topic: partition-1	Partition: 0	Leader: 2	Replicas: 2	Isr: 2
+
+# Alter configuration for topic partition-1 (set retention bytes to 1MB).
+[appuser@3dd3d054cbc0 ~]$ kafka-configs --bootstrap-server kafka_1:9091 --alter --entity-type topics --entity-name partition-1 --add-config retention.bytes=1048576
+Completed updating config for topic partition-1.
+
+# Show configuration to see change.
+[appuser@3dd3d054cbc0 ~]$ kafka-topics --bootstrap-server kafka_1:9091 --describe --topic partition-1
+Topic: partition-1	TopicId: fTavOk4dTJeq6LxffXPGEg	PartitionCount: 1	ReplicationFactor: 1	Configs: cleanup.policy=delete,retention.bytes=1048576
+	Topic: partition-1	Partition: 0	Leader: 2	Replicas: 2	Isr: 2
+```
 
 ### Configuration
 
