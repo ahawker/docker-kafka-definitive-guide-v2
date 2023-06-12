@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#
+# Kafka producer that will generate fixed messages.
+#
+# Usage: $ bin/producer <bootstrap_server> <topic> <num_batches> <batch_size> <delay_between_batch>
+#
+# Example: $ bin/producer localhost:29092 my-topic 100
+
+set -euo pipefail
+
+DEBUG="${DEBUG:-1}"
+
+topic_details() {
+  local -r bootstrap_server="${1}"
+  local -r topic="${2}"
+
+  kafka-topics \
+    --bootstrap-server "${bootstrap_server}" \
+    --topic "${topic}" \
+    --describe
+}
+
+produce() {
+  local -r bootstrap_server="${1}"
+  local -r topic="${2}"
+  local -r batch="${3}"
+
+  echo -e "${batch}" | kafka-console-producer \
+    --compression-codec zstd \
+    --bootstrap-server "${bootstrap_server}" \
+    --topic "${topic}" \
+    --request-required-acks "1" \
+    --property "parse.key=true" \
+    --property "key.separator=|"
+}
+
+batch() {
+  local -r batch_num="${1}"
+  local -r batch_size="${2}"
+
+  result=""
+  for i in $(seq 1 "${batch_size}"); do
+    ts_ms=$(($(gdate +%s%N)/1000000))
+    #line=$(printf '{"id":"dummy_key"}|{"ts":"%s", "batch":"%s", "index":"%s"}' "${ts_ms}" "${batch_num}" "${i}")
+    line=$(printf '{"id":"%s"}|{"ts":"%s", "batch":"%s", "index":"%s"}' "${ts_ms}" "${ts_ms}" "${batch_num}" "${i}")
+    result="${result}${line}\n"
+  done
+
+ echo "${result::${#result}-2}"
+}
+
+main() {
+  local -r bootstrap_server="${1}"
+  local -r topic="${2}"
+  local -r num_batches="${3:-5}"
+  local -r batch_size="${4:-5}"
+  local -r delay="${5:-1}"
+
+  if [ -n "${DEBUG}" ]; then
+    echo "[DEBUG] Topic ${topic}"
+    echo "[DEBUG] Producing ${num_batches} batches of size ${batch_size} with ${delay} second delay in-between"
+    echo "[DEBUG] Topic details:"
+    details=$(topic_details "${bootstrap_server}" "${topic}")
+    printf "%s\n\n" "${details}"
+
+    echo "[DEBUG] Running a Kafka producer with the following command:"
+    echo kafka-console-producer \
+             --compression-codec zstd \
+             --bootstrap-server "${bootstrap_server}" \
+             --topic "${topic}" \
+             --request-required-acks "1" \
+             --property "parse.key=true" \
+             --property "key.separator=|"
+    echo ""
+    echo "[DEBUG] Hit ctrl+c to stop the producer (or wait until it finishes)"
+    echo ""
+  fi
+
+  for b in $(seq 1 "${num_batches}"); do
+    echo "Producing batch ${b} of ${num_batches} with ${batch_size} messages..."
+
+    batch_str=$(batch "${b}" "${batch_size}")
+    produce "${bootstrap_server}" "${topic}" "${batch_str}"
+
+    sleep "${delay}"
+  done
+}
+
+main "$@"

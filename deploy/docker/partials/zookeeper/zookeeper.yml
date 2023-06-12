@@ -1,0 +1,28 @@
+version: '3'
+networks:
+  docker-kafka-definitive-guide-v2:
+services:
+  zookeeper:
+    environment:
+      ZOOKEEPER_CLIENT_PORT: "${ZOOKEEPER_PORT}"
+      ZOOKEEPER_DATA_DIR: "/var/lib/zookeeper/data"
+      ZOOKEEPER_LOG_DIR: "/var/lib/zookeeper/log"
+      ZOOKEEPER_SERVER_ID: "1"
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "${ZOOKEEPER_PORT}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    image: "${ZOOKEEPER_IMG}:${ZOOKEEPER_TAG}"
+    networks:
+      - docker-kafka-definitive-guide-v2
+    ports:
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
+    restart: on-failure
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+volumes:
+  zookeeper_data:
+  zookeeper_logs:

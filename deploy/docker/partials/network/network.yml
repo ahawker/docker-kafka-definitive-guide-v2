@@ -1,0 +1,4 @@
+version: '3'
+networks:
+  docker-kafka-definitive-guide-v2:
+    name: docker-kafka-definitive-guide-v2

@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+#
+# Kafka consumer that will consume a topic and print messages.
+
+set -euo pipefail
+
+DEBUG="${DEBUG:-1}"
+
+topic_details() {
+  local -r bootstrap_server="${1}"
+  local -r topic="${2}"
+
+  kafka-topics \
+    --bootstrap-server "${bootstrap_server}" \
+    --topic "${topic}" \
+    --describe
+}
+
+consume() {
+  local -r bootstrap_server="${1}"
+  local -r topic="${2}"
+  local -r group="${3}"
+
+  kafka-console-consumer \
+    --bootstrap-server "${bootstrap_server}" \
+    --topic "${topic}" \
+    --group "${group}" \
+    --property "print.key=true" \
+    --property "print.topic=true" \
+    --property "print.offset=true" \
+    --property "print.partition=true" \
+    --property "key.separator=|"
+}
+
+main() {
+  local -r bootstrap_server="${1}"
+  local -r topic="${2}"
+  local -r group="${3}"
+
+  if [ -n "${DEBUG}" ]; then
+    echo "[DEBUG] Consuming from topic ${topic}"
+    echo "[DEBUG] Topic details:"
+    details=$(topic_details "${bootstrap_server}" "${topic}")
+    printf "%s\n\n" "${details}"
+
+    echo "[DEBUG] Running a Kafka consumer with the following command:"
+    echo kafka-console-consumer \
+           --bootstrap-server "${bootstrap_server}" \
+           --topic "${topic}" \
+           --group "${group}" \
+           --property "print.key=true" \
+           --property "print.topic=true" \
+           --property "print.offset=true" \
+           --property "print.partition=true" \
+           --property "key.separator=|"
+    echo ""
+    echo "[DEBUG] Hit ctrl+c to stop the consumer"
+    echo ""
+  fi
+
+  consume "${bootstrap_server}" "${topic}" "${group}"
+}
+
+main "$@"
